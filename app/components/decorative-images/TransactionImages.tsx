@@ -1,11 +1,13 @@
 "use client";
 import { useResponsive } from "@/app/contexts/ResponsiveContext";
+import { useSidebar } from "@/app/contexts/SidebarContext";
 import { Box } from "@mui/material";
 import Image from "next/image";
 
 /** Componente que exibe as imagens decorativas do formulário de transação. */
 export default function TransactionImages() {
   const { isMobile, isTablet, isDesktop } = useResponsive();
+  const { selectedItem } = useSidebar();
 
   // Configurações das imagens
   const images = [
@@ -70,7 +72,7 @@ export default function TransactionImages() {
       },
     },
     // Ilustração (mobile e tablet)
-    !isDesktop && {
+    !isDesktop && selectedItem === "Início" || selectedItem === "Transferências" && {
       key: "illustration",
       src: "/images/Ilustração2.png",
       alt: "ilustração",
