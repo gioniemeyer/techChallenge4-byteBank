@@ -3,7 +3,7 @@ import { useResponsive } from "@/app/contexts/ResponsiveContext";
 import { Box, Typography } from "@mui/material";
 
 interface ValueCardProps {
-  title: string;
+	title: string;
 	value: number;
 }
 
@@ -12,16 +12,16 @@ export default function ValueCard({ title, value }: ValueCardProps) {
 	
 	return (
 		<Box
-      sx={{
-        width: isDesktop ? "293px" : "272px",
-        height: "95px",
+			sx={{
+				width: isDesktop ? "293px" : "272px",
+				height: "95px",
 				position: "relative",
-        top: "24px",
-        mb: 3,
-        borderRadius: "8px",
-        backgroundColor: "var(--primaryColor)"
-      }}
-    >
+				top: "24px",
+				mb: 3,
+				borderRadius: "8px",
+				backgroundColor: "var(--primaryColor)"
+			}}
+		>
 			<Typography
 				sx={{
 					fontWeight: 400,

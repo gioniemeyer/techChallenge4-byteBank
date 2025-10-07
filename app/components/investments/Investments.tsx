@@ -8,36 +8,36 @@ import ChartCard from "./ChartCard";
 
 /** Componente que exibe os investimentos. */
 export default function Investments() {
-  const { isMobile, isTablet } = useResponsive();
-  
-  return (
+	const { isMobile, isTablet } = useResponsive();
+	
+	return (
 		<Box
-		  sx={{
+			sx={{
 			position: "relative",
 			height: isMobile ? "844px" : isTablet ? "630px" : "583px",
 			display: "flex",
 			flexDirection: "column",
 			alignItems: isMobile ? "center" : "flex-start",
 			justifyContent: "flex-start",
-		  }}
-		>
-		  {/* Imagens decorativas */}
-		  <TransactionImages />
-	
-		  <Typography
-			sx={{
-			  fontWeight: 700,
-			  fontSize: "25px",
-			  color: "var(--secondaryTextColor)",
-			  mt: isMobile ? 4 : 3,
-			  ml: isMobile ? 0 : 3,
-			  textAlign: isMobile ? "center" : "left",
-			  position: "relative",
 			}}
-		  >Investimentos
-		  </Typography>
+		>
+			{/* Imagens decorativas */}
+			<TransactionImages />
+	
+			<Typography
+			sx={{
+				fontWeight: 700,
+				fontSize: "25px",
+				color: "var(--secondaryTextColor)",
+				mt: isMobile ? 4 : 3,
+				ml: isMobile ? 0 : 3,
+				textAlign: isMobile ? "center" : "left",
+				position: "relative",
+			}}
+			>Investimentos
+			</Typography>
 
-		  <Typography
+			<Typography
 				sx={{
 					fontWeight: 400,
 					fontSize: "25px",
@@ -47,11 +47,11 @@ export default function Investments() {
 					textAlign: isMobile ? "center" : "left",
 					position: "relative",
 				}}
-		  >Total: {investmentsMock[0].total.toLocaleString("pt-BR", {
-								style: "currency",
-								currency: "BRL",
-							})}
-		  </Typography>
+			>Total: {investmentsMock[0].total.toLocaleString("pt-BR", {
+				style: "currency",
+				currency: "BRL",
+			})}
+			</Typography>
 
 			<Box 
 				sx={{
@@ -76,10 +76,10 @@ export default function Investments() {
 					textAlign: isMobile ? "center" : "left",
 					position: "relative",
 				}}
-		  >Estatísticas
-		  </Typography>
+			>Estatísticas
+			</Typography>
 
 			<ChartCard />
 		</Box>
-  );
+	);
 }

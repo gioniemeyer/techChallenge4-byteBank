@@ -16,8 +16,8 @@ export default function Chart() {
 		height: 126,
 	};
 
-  return (
-    <PieChart 
+	return (
+		<PieChart 
 			series={
 				[
 					{ data, 
@@ -36,23 +36,23 @@ export default function Chart() {
 					fontWeight: 400,
 				},
 				"& .MuiChartsLegend-root .MuiChartsLegend-mark": {
-          width: 10,
-          height: 10,
+					width: 10,
+					height: 10,
 					ml: 3,
-        },
+				},
 				"& .MuiChartsLegend-item": {
 					mt: isMobile ? 2 : 0,
 				},
 			}} 
 			slotProps={{
-        legend: {
-          direction: isMobile ? "horizontal" : "vertical",
-          position: {
-            vertical: isMobile ? "bottom" : "middle",
-          },
-        },
-      }}
+				legend: {
+					direction: isMobile ? "horizontal" : "vertical",
+					position: {
+						vertical: isMobile ? "bottom" : "middle",
+					},
+				},
+			}}
 			{...size}>
-    </PieChart>
-  );
+		</PieChart>
+	);
 }

@@ -8,16 +8,16 @@ export default function ChartCard() {
 	
 	return (
 		<Box
-      sx={{
-        width: isDesktop ? "640px" : isTablet ? "568px" : "276px",
-        height: isMobile ? "342px" : "184px",
+			sx={{
+				width: isDesktop ? "640px" : isTablet ? "568px" : "276px",
+				height: isMobile ? "342px" : "184px",
 				position: "relative",
-        top: "24px",
+				top: "24px",
 				ml: isDesktop ? 3 : isTablet ? 2 : 0,
-        borderRadius: "8px",
-        backgroundColor: "var(--primaryColor)"
-      }}
-    >
+				borderRadius: "8px",
+				backgroundColor: "var(--primaryColor)"
+			}}
+		>
 			<Box sx={{mt: 3}}>
 				<Chart />
 			</Box>
