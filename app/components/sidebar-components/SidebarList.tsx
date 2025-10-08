@@ -1,5 +1,6 @@
 "use client";
 import { useResponsive } from "@/app/contexts/ResponsiveContext";
+import { useSidebar } from "@/app/contexts/SidebarContext";
 import CloseIcon from "@mui/icons-material/Close";
 import {
 	Box,
@@ -11,7 +12,6 @@ import {
 	ListItemText,
 	Typography,
 } from "@mui/material";
-import { useState } from "react";
 
 type SidebarListProps = {
   onClose?: () => void;
@@ -20,6 +20,7 @@ type SidebarListProps = {
 /** Sidebar list component */
 export default function SidebarList({ onClose }: SidebarListProps) {
   const { isMobile, isTablet, isDesktop } = useResponsive();
+  const { selectedItem, setSelectedItem } = useSidebar();
 
   const itens = [
     "Início",
@@ -28,9 +29,10 @@ export default function SidebarList({ onClose }: SidebarListProps) {
     "Outros serviços",
   ];
 
-  const [selectedItem, setSelectedItem] = useState(0);
-
-  const setListItemColor = (index: number) => setSelectedItem(index);
+  const handleClick = (text: string) => {
+    setSelectedItem(text);
+    onClose?.();
+  };
 
   if (isDesktop) {
     return (
@@ -39,8 +41,8 @@ export default function SidebarList({ onClose }: SidebarListProps) {
           <Box key={index} sx={{ textAlign: "center" }}>
             <ListItem disablePadding>
               <ListItemButton
-                selected={selectedItem === index}
-                onClick={() => setListItemColor(index)}
+                selected={selectedItem === text}
+                onClick={() => handleClick(text)}
                 sx={{
                   "&.Mui-selected": {
                     backgroundColor: "transparent",
@@ -57,9 +59,9 @@ export default function SidebarList({ onClose }: SidebarListProps) {
                   primary={
                     <Typography
                       fontSize={16}
-                      fontWeight={selectedItem === index ? 700 : 400}
+                      fontWeight={selectedItem === text ? 700 : 400}
                       color={
-                        selectedItem === index ? "var(--thirdColor)" : "inherit"
+                        selectedItem === text ? "var(--thirdColor)" : "inherit"
                       }
                       textAlign="center"
                       noWrap
@@ -98,14 +100,14 @@ export default function SidebarList({ onClose }: SidebarListProps) {
         }}
       >
         {itens.map((text, index) => (
-          <Box key={index} onClick={() => setListItemColor(index)}>
+          <Box key={index} onClick={() => handleClick(text)}>
             <Typography
               sx={{
                 textAlign: "center",
                 fontSize: 16,
-                fontWeight: selectedItem === index ? 700 : 400,
+                fontWeight: selectedItem === text ? 700 : 400,
                 color:
-                  selectedItem === index
+                  selectedItem === text
                     ? "var(--thirdColor)"
                     : "var(--secondaryTextColor)",
               }}
@@ -113,7 +115,7 @@ export default function SidebarList({ onClose }: SidebarListProps) {
               {text}
             </Typography>
 
-            {selectedItem === index && (
+            {selectedItem === text && (
               <Box
                 sx={{
                   width: "112px",
@@ -161,8 +163,8 @@ export default function SidebarList({ onClose }: SidebarListProps) {
             <Box key={index} sx={{ textAlign: "center" }}>
               <ListItem disablePadding>
                 <ListItemButton
-                  selected={selectedItem === index}
-                  onClick={() => setListItemColor(index)}
+                  selected={selectedItem === text}
+                  onClick={() => handleClick(text)}
                   sx={{
                     "&.Mui-selected": {
                       backgroundColor: "transparent",
@@ -176,9 +178,9 @@ export default function SidebarList({ onClose }: SidebarListProps) {
                     primary={
                       <Typography
                         fontSize={16}
-                        fontWeight={selectedItem === index ? 700 : 400}
+                        fontWeight={selectedItem === text ? 700 : 400}
                         color={
-                          selectedItem === index
+                          selectedItem === text
                             ? "var(--secondaryColor)"
                             : "var(--secondaryTextColor)"
                         }

@@ -1,6 +1,7 @@
 "use client";
 import { useResponsive } from "@/app/contexts/ResponsiveContext";
 import { Box } from "@mui/material";
+import Investments from "../investments/Investments";
 import Transaction from "./Transaction";
 import Welcome from "./Welcome";
 
@@ -28,6 +29,7 @@ export default function CentralBox({ content }: CentralBoxProps) {
     >
       {content === "welcome" && <Welcome />}
       {content === "transaction" && <Transaction />}
+      {content === "investments" && <Investments />}
     </Box>
   );
 }
