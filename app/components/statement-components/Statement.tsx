@@ -2,10 +2,11 @@
 import { useResponsive } from "@/app/contexts/ResponsiveContext";
 import { useTransactions } from "@/app/contexts/TransactionContext";
 import { Box, Typography } from "@mui/material";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import FormModal from "../central-components/FormModal";
 import EditButton from "../buttons/EditButton";
 import StatementItem from "./StatementItem";
+import FilterButton from "../buttons/FilterButton";
 
 /** Componente de extrato */
 export default function Statement() {
@@ -17,6 +18,12 @@ export default function Statement() {
   const [editMode, setEditMode] = useState(false);
   const [deleteMode, setDeleteMode] = useState(false);
   const [open, setOpen] = useState(false);
+
+  // Filtros
+  const [filters, setFilters] = useState({
+    month: "", // texto digitado: ex. "Novembro", "nov", "Fev"
+    transactionType: "", // ex. "Entrada", "Saída", "Transferência"
+  });
 
   // Handlers dos botões globais
   const handleEditMode = () => {
@@ -30,6 +37,29 @@ export default function Statement() {
     setEditMode(false);
     setEditingId(null);
   };
+
+  // Filtro de transações (mês digitado + tipo de transação)
+  const filteredTransactions = useMemo(() => {
+    const monthQuery = (filters.month || "").trim().toLowerCase();
+
+    return transactions.filter((t) => {
+      const date = new Date(t.date);
+
+      // Nome do mês em pt-BR no mesmo formato do StatementItem
+      const monthLongPt = date
+        .toLocaleDateString("pt-BR", { month: "long" })
+        .toLowerCase(); // exemplo: "novembro"
+
+      // match de mês: se digitou algo, verifica se contém (aceita prefixo/parcial)
+      const matchMonth = !monthQuery || monthLongPt.includes(monthQuery);
+
+      // match de tipo: compara quando selecionado (ajuste o texto para casar com o seu t.type)
+      const matchType =
+        !filters.transactionType || t.type === filters.transactionType;
+
+      return matchMonth && matchType;
+    });
+  }, [transactions, filters.month, filters.transactionType]);
 
   const openModal = () => setOpen(true);
 
@@ -96,10 +126,18 @@ export default function Statement() {
             <span onClick={handleDeleteMode}>
               <EditButton type="delete" editing={deleteMode} />
             </span>
+            <span>
+              <FilterButton
+                initialFilters={filters}
+                onChange={setFilters}
+                onApply={setFilters}
+              />
+            </span>
           </Box>
         </Box>
 
-        {transactions.map((item) => (
+        {/* Use as transações filtradas */}
+        {filteredTransactions.map((item) => (
           <StatementItem
             key={item.id}
             id={item.id}
