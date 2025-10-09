@@ -177,10 +177,10 @@ export default function Statement() {
           width: "100%",
         }}
       >
-        {paginated.map((item) => (
+        {paginated.map((item, index) => (
           <StatementItem
-            key={item.id}
-            id={item.id}
+            key={item.id || index}
+            id={item.id || index}
             date={item.date}
             type={item.type}
             value={item.value}
