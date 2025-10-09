@@ -1,13 +1,22 @@
 "use client";
 import { useResponsive } from "@/app/contexts/ResponsiveContext";
 import { useTransactions } from "@/app/contexts/TransactionContext";
-import { Box, Typography } from "@mui/material";
-import { useState } from "react";
+import {
+  Box,
+  Typography,
+  Pagination,
+  Stack,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+} from "@mui/material";
+import { useEffect, useMemo, useState } from "react";
 import FormModal from "../central-components/FormModal";
 import EditButton from "../buttons/EditButton";
 import StatementItem from "./StatementItem";
+import FilterButton from "../buttons/FilterButton";
 
-/** Componente de extrato */
 export default function Statement() {
   const { isMobile, isDesktop } = useResponsive();
   const { transactions, editingId, setEditingId, deleteTransaction } =
@@ -17,6 +26,62 @@ export default function Statement() {
   const [editMode, setEditMode] = useState(false);
   const [deleteMode, setDeleteMode] = useState(false);
   const [open, setOpen] = useState(false);
+
+  // Filtros
+  const [filters, setFilters] = useState({
+    month: "",
+    transactionType: "",
+  });
+
+  // Paginação
+  const [page, setPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(8); // valor inicial
+  const optionsRowsPerPage = [5, 8, 10, 20];
+
+  const handlePageChange = (_: React.ChangeEvent<unknown>, value: number) => {
+    setPage(value);
+  };
+
+  const handleRowsPerPageChange = (event: { target: { value: number } }) => {
+    const value = Number(event.target.value);
+    setRowsPerPage(value);
+    setPage(1); // reset para primeira página ao mudar o tamanho
+  };
+
+  // Filtro
+  const filteredTransactions = useMemo(() => {
+    const monthQuery = (filters.month || "").trim().toLowerCase();
+
+    return transactions.filter((t) => {
+      const date = new Date(t.date);
+      const monthLongPt = date
+        .toLocaleDateString("pt-BR", { month: "long" })
+        .toLowerCase();
+      const matchMonth = !monthQuery || monthLongPt.includes(monthQuery);
+      const matchType =
+        !filters.transactionType || t.type === filters.transactionType;
+      return matchMonth && matchType;
+    });
+  }, [transactions, filters.month, filters.transactionType]);
+
+  // Total de páginas
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredTransactions.length / rowsPerPage)
+  );
+
+  // Itens paginados
+  const paginated = useMemo(() => {
+    const currentPage = Math.min(Math.max(page, 1), totalPages);
+    const start = (currentPage - 1) * rowsPerPage;
+    return filteredTransactions.slice(start, start + rowsPerPage);
+  }, [filteredTransactions, page, rowsPerPage, totalPages]);
+
+  // Sincroniza page se filtros mudarem e reduzirem o total de páginas
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages);
+    if (page < 1) setPage(1);
+  }, [page, totalPages]);
 
   // Handlers dos botões globais
   const handleEditMode = () => {
@@ -32,7 +97,6 @@ export default function Statement() {
   };
 
   const openModal = () => setOpen(true);
-
   const closeModal = () => {
     setOpen(false);
     setEditingId(null);
@@ -42,10 +106,7 @@ export default function Statement() {
   const handleItemClick = (id: number) => {
     if (editMode) {
       setEditingId(id);
-
-      if (!isDesktop) {
-        openModal();
-      }
+      if (!isDesktop) openModal();
     }
     if (deleteMode) {
       deleteTransaction(id);
@@ -61,48 +122,65 @@ export default function Statement() {
         mt: isDesktop ? 3 : 6,
         borderRadius: "8px",
         backgroundColor: "var(--primaryTextColor)",
+        display: "flex",
+        flexDirection: "column",
+        overflowX: "hidden",
       }}
     >
+      {/* Cabeçalho */}
       <Box
         sx={{
           display: "flex",
-          flexDirection: "column",
           alignItems: "center",
           justifyContent: "space-between",
+          m: 3,
+          width: "240px",
+          alignSelf: "center",
         }}
       >
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            m: 3,
-            width: "240px",
-          }}
-        >
-          <Typography
-            sx={{
-              fontWeight: 700,
-              fontSize: "25px",
+        <Typography sx={{ fontWeight: 700, fontSize: "25px" }}>
+          Extrato
+        </Typography>
+
+        <Box sx={{ display: "flex" }}>
+          <FilterButton
+            initialFilters={filters}
+            onChange={(f) => {
+              setFilters(f);
+              setPage(1); // reset página ao mudar filtros
             }}
-          >
-            Extrato
-          </Typography>
-
-          <Box sx={{ display: "flex" }}>
-            <span onClick={handleEditMode}>
-              <EditButton type="edit" editing={editMode} />
-            </span>
-            <span onClick={handleDeleteMode}>
-              <EditButton type="delete" editing={deleteMode} />
-            </span>
-          </Box>
+            onApply={(f) => {
+              setFilters(f);
+              setPage(1); // reset página ao aplicar filtros
+            }}
+          />
+          <span onClick={handleEditMode}>
+            <EditButton type="edit" editing={editMode} />
+          </span>
+          <span onClick={handleDeleteMode}>
+            <EditButton type="delete" editing={deleteMode} />
+          </span>
         </Box>
+      </Box>
 
-        {transactions.map((item) => (
+      {/* Lista com scroll vertical */}
+      <Box
+        sx={{
+          flex: 1,
+          overflowY: "auto",
+          overflowX: "hidden",
+          maxHeight: isDesktop ? 420 : 380,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          px: 1,
+          width: "100%",
+        }}
+      >
+        {paginated.map((item, index) => (
           <StatementItem
-            key={item.id}
-            id={item.id}
+            key={item.id || index}
+            id={item.id || index}
             date={item.date}
             type={item.type}
             value={item.value}
@@ -111,9 +189,73 @@ export default function Statement() {
             onClick={() => handleItemClick(item.id)}
           />
         ))}
-
-        <FormModal open={open} onClose={closeModal} />
       </Box>
+
+      {/* Rodapé: seletor de rowsPerPage + paginação */}
+      <Stack
+        direction="row"
+        alignItems="center"
+        justifyContent="center"
+        gap={2}
+        py={1}
+        px={2}
+      >
+        <FormControl size="small" sx={{ minWidth: 100 }}>
+          <InputLabel id="rows-per-page-label">itens / página</InputLabel>
+          <Select
+            labelId="rows-per-page-label"
+            label="Itens por página"
+            value={rowsPerPage}
+            onChange={handleRowsPerPageChange}
+          >
+            {optionsRowsPerPage.map((value) => (
+              <MenuItem key={value} value={value}>
+                {value}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
+        <Pagination
+          count={totalPages}
+          page={page}
+          onChange={handlePageChange}
+          size="small"
+          sx={{
+            // cor padrão dos itens (números, setas, reticências)
+            "& .MuiPaginationItem-root": {
+              color: "var(--thirdTextColor)",
+            },
+            "& .MuiPaginationItem-icon, & .MuiPaginationItem-ellipsis": {
+              color: "var(--thirdTextColor)",
+            },
+
+            // item selecionado: fundo primário e texto branco
+            "& .MuiPaginationItem-root.Mui-selected": {
+              backgroundColor: "var(--primaryColor)",
+              color: "var(--primaryTextColor)",
+            },
+            // hover do item selecionado
+            "& .MuiPaginationItem-root.Mui-selected:hover": {
+              backgroundColor: "var(--primaryColor)",
+              opacity: 0.9,
+            },
+
+            // hover dos itens não selecionados (opcional)
+            "& .MuiPaginationItem-root:hover": {
+              backgroundColor: "rgba(255,255,255,0.08)",
+            },
+
+            // botão de navegação (First/Last/Prev/Next) se usar showFirstButton/showLastButton
+            "& .MuiPaginationItem-previousNext, & .MuiPaginationItem-firstLast":
+              {
+                color: "#000",
+              },
+          }}
+        />
+      </Stack>
+
+      <FormModal open={open} onClose={closeModal} />
     </Box>
   );
 }
