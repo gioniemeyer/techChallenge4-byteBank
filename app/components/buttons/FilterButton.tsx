@@ -154,7 +154,7 @@ export default function FilterButton({
               }}
               aria-label="Limpar filtros"
             >
-              Clear
+              Limpar
             </IconButton>
             <IconButton
               onClick={handleApply}
@@ -171,7 +171,7 @@ export default function FilterButton({
               }}
               aria-label="Aplicar filtros"
             >
-              Apply
+              Aplicar
             </IconButton>
           </Box>
         </Box>

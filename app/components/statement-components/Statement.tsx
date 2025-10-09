@@ -221,7 +221,37 @@ export default function Statement() {
           page={page}
           onChange={handlePageChange}
           size="small"
-          color="primary"
+          sx={{
+            // cor padrão dos itens (números, setas, reticências)
+            "& .MuiPaginationItem-root": {
+              color: "var(--thirdTextColor)",
+            },
+            "& .MuiPaginationItem-icon, & .MuiPaginationItem-ellipsis": {
+              color: "var(--thirdTextColor)",
+            },
+
+            // item selecionado: fundo primário e texto branco
+            "& .MuiPaginationItem-root.Mui-selected": {
+              backgroundColor: "var(--primaryColor)",
+              color: "var(--primaryTextColor)",
+            },
+            // hover do item selecionado
+            "& .MuiPaginationItem-root.Mui-selected:hover": {
+              backgroundColor: "var(--primaryColor)",
+              opacity: 0.9,
+            },
+
+            // hover dos itens não selecionados (opcional)
+            "& .MuiPaginationItem-root:hover": {
+              backgroundColor: "rgba(255,255,255,0.08)",
+            },
+
+            // botão de navegação (First/Last/Prev/Next) se usar showFirstButton/showLastButton
+            "& .MuiPaginationItem-previousNext, & .MuiPaginationItem-firstLast":
+              {
+                color: "#000",
+              },
+          }}
         />
       </Stack>
 
