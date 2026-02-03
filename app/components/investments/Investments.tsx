@@ -1,14 +1,21 @@
 "use client";
 import { useResponsive } from "@/app/contexts/ResponsiveContext";
+import { useInvestments } from "@/app/modules/investments";
 import { Box, Typography } from "@mui/material";
 import TransactionImages from "../decorative-images/TransactionImages";
-import { investmentsMock } from "@/app/mocks/investments-mock";
 import ValueCard from "./ValueCard";
 import ChartCard from "./ChartCard";
 
 /** Componente que exibe os investimentos. */
 export default function Investments() {
 	const { isMobile, isTablet } = useResponsive();
+	const { investments, loading } = useInvestments();
+
+	if (loading || !investments || investments.length === 0) {
+		return <Typography>Carregando investimentos...</Typography>;
+	}
+
+	const firstInvestment = investments[0];
 	
 	return (
 		<Box
@@ -47,7 +54,7 @@ export default function Investments() {
 					textAlign: isMobile ? "center" : "left",
 					position: "relative",
 				}}
-			>Total: {investmentsMock[0].total.toLocaleString("pt-BR", {
+			>Total: {firstInvestment.value.toLocaleString("pt-BR", {
 				style: "currency",
 				currency: "BRL",
 			})}
@@ -62,8 +69,8 @@ export default function Investments() {
 					justifyContent: "space-around",
 				}}
 			>
-				<ValueCard title="Renda Fixa" value={investmentsMock[0].fixo} />
-				<ValueCard title="Renda Variável" value={investmentsMock[0].variavel}/>
+				<ValueCard title="Renda Fixa" value={firstInvestment.profitability * 0.6} />
+				<ValueCard title="Renda Variável" value={firstInvestment.profitability * 0.4}/>
 			</Box>
 
 			<Typography

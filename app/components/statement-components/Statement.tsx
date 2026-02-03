@@ -1,6 +1,6 @@
 "use client";
 import { useResponsive } from "@/app/contexts/ResponsiveContext";
-import { useTransactions } from "@/app/contexts/TransactionContext";
+import { useTransactionManagement } from "@/app/modules/transactions";
 import {
   Box,
   Typography,
@@ -20,7 +20,7 @@ import FilterButton from "../buttons/FilterButton";
 export default function Statement() {
   const { isMobile, isDesktop } = useResponsive();
   const { transactions, editingId, setEditingId, deleteTransaction } =
-    useTransactions();
+    useTransactionManagement();
 
   // Estados para modo de edição e exclusão
   const [editMode, setEditMode] = useState(false);
