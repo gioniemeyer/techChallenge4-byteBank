@@ -1,12 +1,28 @@
 "use client";
 import { useResponsive } from "@/app/contexts/ResponsiveContext";
-import { userMock } from "@/app/mocks/user-mock";
+import { useUser } from "@/app/modules/user";
 import AccountCircleOutlinedIcon from "@mui/icons-material/AccountCircleOutlined";
 import { Box, Typography } from "@mui/material";
 
 /** Componente que exibe as informações do usuário. */
 export default function UserComponent() {
   const { isMobile } = useResponsive();
+  const { user, loading } = useUser();
+
+  if (loading || !user) {
+    return (
+      <Box sx={{ display: "flex", alignItems: "center", maxWidth: "200px" }}>
+        <AccountCircleOutlinedIcon
+          sx={{
+            color: "var(--secondaryColor)",
+            height: "40px",
+            width: "40px",
+          }}
+        />
+      </Box>
+    );
+  }
+
   return (
     <Box
       sx={{
@@ -25,7 +41,7 @@ export default function UserComponent() {
             textWrap: "nowrap",
           }}
         >
-          {userMock[0].first_name + " " + userMock[0].last_name}
+          {user.name}
         </Typography>
       )}
       <AccountCircleOutlinedIcon

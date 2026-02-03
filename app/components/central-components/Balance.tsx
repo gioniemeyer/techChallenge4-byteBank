@@ -22,7 +22,7 @@ export default function Balance() {
   }
 
   // Pegue o saldo mais recente
-  const latestBalance = balanceMock[balanceMock.length - 1]?.balance ?? 0;
+  const balance = balanceMock[balanceMock.length - 1]?.balance ?? 0;
 
   // Cor do ícone/divisor
   const iconColor = isDesktop ? "var(--secondaryColor)" : "var(--primaryTextColor)";
@@ -80,7 +80,7 @@ export default function Balance() {
           }}
         >
           {showBalance
-            ? latestBalance.toLocaleString("pt-BR", {
+            ? balance.toLocaleString("pt-BR", {
                 style: "currency",
                 currency: "BRL",
               })

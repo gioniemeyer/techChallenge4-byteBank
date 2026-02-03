@@ -1,6 +1,6 @@
 "use client";
 import { useResponsive } from "@/app/contexts/ResponsiveContext";
-import { useTransactions } from "@/app/contexts/TransactionContext";
+import { useTransactionManagement } from "@/app/modules/transactions";
 import type { SxProps, Theme } from "@mui/material";
 import {
   Box,
@@ -26,7 +26,7 @@ export default function TransactionForm({ onCancel }: TransactionFormProps) {
     editingId,
     setEditingId,
     transactions,
-  } = useTransactions();
+  } = useTransactionManagement();
 
   // Se estiver editando, pega a transação
   const transaction = editingId
@@ -71,18 +71,35 @@ export default function TransactionForm({ onCancel }: TransactionFormProps) {
     };
 
     if (editingId) {
-      editTransaction(editingId, transactionData);
-      setEditingId(null);
-
-      if (!isDesktop) {
-        onCancel?.();
-      }
+      editTransaction(
+        editingId,
+        transactionData.date,
+        transactionData.type as "Depósito" | "Transferência",
+        transactionData.value
+      ).then(() => {
+        setEditingId(null);
+        setTransaction("");
+        setValue("");
+        if (!isDesktop) {
+          onCancel?.();
+        }
+      }).catch((err) => {
+        console.error("Erro ao editar transação:", err);
+        setError(err.message || "Erro ao editar transação");
+      });
     } else {
-      addTransaction(transactionData);
+      addTransaction(
+        transactionData.date,
+        transactionData.type as "Depósito" | "Transferência",
+        transactionData.value
+      ).then(() => {
+        setTransaction("");
+        setValue("");
+      }).catch((err) => {
+        console.error("Erro ao adicionar transação:", err);
+        setError(err.message || "Erro ao adicionar transação");
+      });
     }
-
-    setTransaction("");
-    setValue("");
   };
 
   // Responsividade do container principal
