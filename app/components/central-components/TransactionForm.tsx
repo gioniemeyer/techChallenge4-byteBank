@@ -1,6 +1,6 @@
 "use client";
 import { useResponsive } from "@/app/contexts/ResponsiveContext";
-import { useTransactionManagement } from "@/app/modules/transactions";
+import { useTransactionContext } from "@/app/contexts/TransactionContext";
 import type { SxProps, Theme } from "@mui/material";
 import {
   Box,
@@ -26,7 +26,7 @@ export default function TransactionForm({ onCancel }: TransactionFormProps) {
     editingId,
     setEditingId,
     transactions,
-  } = useTransactionManagement();
+  } = useTransactionContext();
 
   // Se estiver editando, pega a transação
   const transaction = editingId

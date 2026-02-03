@@ -1,6 +1,6 @@
 "use client";
 import { useResponsive } from "@/app/contexts/ResponsiveContext";
-import { balanceMock } from "@/app/mocks/user-mock";
+import { useTransactionContext } from "@/app/contexts/TransactionContext";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import type { SxProps, Theme } from "@mui/material";
@@ -9,6 +9,7 @@ import { useState } from "react";
 
 export default function Balance() {
   const { isMobile, isDesktop } = useResponsive();
+  const { balance } = useTransactionContext();
   const [showBalance, setShowBalance] = useState(true);
 
   let sx: SxProps<Theme>;
@@ -20,9 +21,6 @@ export default function Balance() {
   } else {
     sx = { position: "relative", top: "86px", right: "110px" };
   }
-
-  // Pegue o saldo mais recente
-  const balance = balanceMock[balanceMock.length - 1]?.balance ?? 0;
 
   // Cor do ícone/divisor
   const iconColor = isDesktop ? "var(--secondaryColor)" : "var(--primaryTextColor)";

@@ -1,6 +1,6 @@
 "use client";
 import { useResponsive } from "@/app/contexts/ResponsiveContext";
-import { useTransactionManagement } from "@/app/modules/transactions";
+import { useTransactionContext } from "@/app/contexts/TransactionContext";
 import { Box, Typography } from "@mui/material";
 import TransactionImages from "../decorative-images/TransactionImages";
 import TransactionForm from "./TransactionForm";
@@ -8,7 +8,7 @@ import TransactionForm from "./TransactionForm";
 /** Componente que exibe o formulário de transação. */
 export default function Transaction() {
   const { isMobile } = useResponsive();
-  const { editingId } = useTransactionManagement();
+  const { editingId } = useTransactionContext();
 
   return (
     <Box
