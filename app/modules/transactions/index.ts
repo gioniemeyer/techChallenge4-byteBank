@@ -1,15 +1,18 @@
 /**
  * Índice do Módulo de Transações - Transactions Module
- * 
+ *
  * Este arquivo exporta a interface pública do módulo.
  * Outros módulos devem importar APENAS deste arquivo.
- * 
+ *
  * Exemplo:
- * import { 
- *   GetTransactionsUseCase, 
+ * import {
+ *   GetTransactionsUseCase,
  *   AddTransactionUseCase,
- *   useTransactionManagement 
+ *   Transaction
  * } from "@/app/modules/transactions";
+ *
+ * Para gerenciamento de estado, use o TransactionContext:
+ * import { useTransactionContext } from "@/app/contexts/TransactionContext";
  */
 
 // ============= CORE =============
@@ -34,11 +37,6 @@ export { ValidationError, NotFoundError, DomainError } from "@/app/modules/share
 // Repositories Implementation
 export { InMemoryTransactionRepository } from "./infrastructure/repositories/InMemoryTransactionRepository";
 
-// ============= PRESENTATION =============
-
-// Hooks
-export { useTransactionManagement } from "./presentation/hooks/useTransactionManagement";
-
 // ============= PRIVATE (Não exporte!) =============
 // DIContainer é privado e gerenciado internamente
-// Componentes devem usar hooks, não o container diretamente
+// Componentes devem usar useTransactionContext do contexto
