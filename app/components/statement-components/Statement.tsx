@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useResponsive } from "@/app/contexts/ResponsiveContext";
 import { useTransactionManagement } from "@/app/modules/transactions";
 import {
@@ -13,10 +14,15 @@ import {
   MenuItem,
 } from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
-import FormModal from "../central-components/FormModal";
 import EditButton from "../buttons/EditButton";
 import StatementItem from "./StatementItem";
 import FilterButton from "../buttons/FilterButton";
+
+// Lazy load do FormModal (carrega só quando necessário)
+const FormModal = dynamic(() => import("../central-components/FormModal"), {
+  loading: () => <span>Carregando modal...</span>,
+  ssr: false, // garante que o modal seja tratado apenas no client
+});
 
 export default function Statement() {
   const { isMobile, isDesktop } = useResponsive();
@@ -237,9 +243,7 @@ export default function Statement() {
           onChange={handlePageChange}
           size="small"
           sx={{
-            "& .MuiPaginationItem-root": {
-              color: "var(--thirdTextColor)",
-            },
+            "& .MuiPaginationItem-root": { color: "var(--thirdTextColor)" },
             "& .MuiPaginationItem-icon, & .MuiPaginationItem-ellipsis": {
               color: "var(--thirdTextColor)",
             },
@@ -255,36 +259,41 @@ export default function Statement() {
               backgroundColor: "rgba(255,255,255,0.08)",
             },
             "& .MuiPaginationItem-previousNext, & .MuiPaginationItem-firstLast":
-              {
-                color: "#000",
-              },
+              { color: "#000" },
           }}
         />
       </Stack>
 
-      {/* Modal de edição - controlado pelo Statement */}
-      <FormModal
-        open={open}
-        onClose={closeModal}
-        current={
-          currentTransaction
-            ? {
-                date: currentTransaction.date,
-                type: currentTransaction.type,
-                value: currentTransaction.value,
-              }
-            : null
-        }
-        onSave={async (data) => {
-          if (!editingId) return;
-          try {
-            await editTransaction(editingId, data.date, data.type, data.value);
-            closeModal();
-          } catch (e) {
-            console.error("Erro ao salvar edição:", e);
+      {/* Modal de edição - lazy e controlado */}
+      {open && (
+        <FormModal
+          open={open}
+          onClose={closeModal}
+          current={
+            currentTransaction
+              ? {
+                  date: currentTransaction.date,
+                  type: currentTransaction.type,
+                  value: currentTransaction.value,
+                }
+              : null
           }
-        }}
-      />
+          onSave={async (data) => {
+            if (!editingId) return;
+            try {
+              await editTransaction(
+                editingId,
+                data.date,
+                data.type,
+                data.value,
+              );
+              closeModal();
+            } catch (e) {
+              console.error("Erro ao salvar edição:", e);
+            }
+          }}
+        />
+      )}
     </Box>
   );
 }
