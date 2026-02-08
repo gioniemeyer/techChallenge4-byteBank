@@ -19,7 +19,7 @@ type TransactionFormProps = {
     type: "Depósito" | "Transferência";
     value: number;
   };
-  onCancel: () => void;
+  onCancel?: () => void;
   onSave: (data: {
     date: string;
     type: "Depósito" | "Transferência";
@@ -247,7 +247,15 @@ export default function TransactionForm({
         </Button>
 
         <Button
-          onClick={onCancel}
+          onClick={() => {
+            // limpa estados do formulário antes de fechar
+            setType("");
+            setValue("");
+            setError("");
+            if (typeof onCancel === "function") {
+              onCancel();
+            }
+          }}
           variant="outlined"
           sx={{
             color: "var(--primaryColor)",
