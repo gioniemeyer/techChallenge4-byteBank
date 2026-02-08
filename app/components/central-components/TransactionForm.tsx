@@ -1,6 +1,5 @@
 "use client";
 import { useResponsive } from "@/app/contexts/ResponsiveContext";
-import { useTransactionManagement } from "@/app/modules/transactions";
 import type { SxProps, Theme } from "@mui/material";
 import {
   Box,
@@ -14,92 +13,65 @@ import {
 } from "@mui/material";
 import { useEffect, useState } from "react";
 
-interface TransactionFormProps {
-  onCancel?: () => void;
-}
+type TransactionFormProps = {
+  initialData?: {
+    date: string;
+    type: "Depósito" | "Transferência";
+    value: number;
+  };
+  onCancel: () => void;
+  onSave: (data: {
+    date: string;
+    type: "Depósito" | "Transferência";
+    value: number;
+  }) => void;
+};
 
-export default function TransactionForm({ onCancel }: TransactionFormProps) {
+export default function TransactionForm({
+  initialData,
+  onCancel,
+  onSave,
+}: TransactionFormProps) {
   const { isMobile, isDesktop } = useResponsive();
-  const {
-    addTransaction,
-    editTransaction,
-    editingId,
-    setEditingId,
-    transactions,
-  } = useTransactionManagement();
-
-  // Se estiver editando, pega a transação
-  const transaction = editingId
-    ? transactions.find((tx) => tx.id === editingId)
-    : null;
 
   // Estado do formulário
-  const [type, setTransaction] = useState("");
+  const [type, setType] = useState<"" | "d" | "t">("");
   const [value, setValue] = useState("");
   const [error, setError] = useState("");
 
-  // Preenche os campos ao editar
+  // Preenche os campos ao receber initialData
   useEffect(() => {
-    if (transaction) {
-      setTransaction(transaction.type === "Depósito" ? "d" : "t");
-      setValue(transaction.value.toFixed(2).replace(".", ","));
+    if (initialData) {
+      setType(initialData.type === "Depósito" ? "d" : "t");
+      setValue(initialData.value.toFixed(2).replace(".", ","));
     } else {
-      setTransaction("");
+      setType("");
       setValue("");
     }
     setError("");
-  }, [transaction]);
+  }, [initialData]);
 
-  const handleChange = (event: SelectChangeEvent) => {
-    setTransaction(event.target.value as string);
+  const handleTypeChange = (event: SelectChangeEvent) => {
+    setType(event.target.value as "d" | "t");
   };
 
-  const submitForm = () => {
+  const submitForm = async () => {
     const valueRegex = /^\d+,\d{2}$/;
-
     if (!valueRegex.test(value)) {
       setError("Informe o valor no formato 00,00");
       return;
     }
 
     setError("");
-
-    const transactionData = {
-      date: transaction ? transaction.date : new Date().toISOString(),
-      type: type === "d" ? "Depósito" : "Transferência",
+    const data = {
+      date: initialData ? initialData.date : new Date().toISOString(),
+      type: (type === "d" ? "Depósito" : "Transferência") as
+        | "Depósito"
+        | "Transferência",
       value: parseFloat(value.replace(",", ".")),
     };
 
-    if (editingId) {
-      editTransaction(
-        editingId,
-        transactionData.date,
-        transactionData.type as "Depósito" | "Transferência",
-        transactionData.value
-      ).then(() => {
-        setEditingId(null);
-        setTransaction("");
-        setValue("");
-        if (!isDesktop) {
-          onCancel?.();
-        }
-      }).catch((err) => {
-        console.error("Erro ao editar transação:", err);
-        setError(err.message || "Erro ao editar transação");
-      });
-    } else {
-      addTransaction(
-        transactionData.date,
-        transactionData.type as "Depósito" | "Transferência",
-        transactionData.value
-      ).then(() => {
-        setTransaction("");
-        setValue("");
-      }).catch((err) => {
-        console.error("Erro ao adicionar transação:", err);
-        setError(err.message || "Erro ao adicionar transação");
-      });
-    }
+    await onSave(data);
   };
 
   // Responsividade do container principal
@@ -124,7 +96,6 @@ export default function TransactionForm({ onCancel }: TransactionFormProps) {
       gap: 2,
     };
   } else {
-    // Tablet
     sx = {
       mt: 3,
       ml: 3,
@@ -150,16 +121,15 @@ export default function TransactionForm({ onCancel }: TransactionFormProps) {
       >
         <Select
           value={type}
-          onChange={handleChange}
+          onChange={handleTypeChange}
           displayEmpty
           renderValue={(selected) => {
-            if (!selected) {
+            if (!selected)
               return (
                 <span style={{ color: "#999" }}>
                   Selecione o tipo de transação
                 </span>
               );
-            }
             return selected === "d" ? "Depósito" : "Transferência";
           }}
           sx={{
@@ -273,32 +243,25 @@ export default function TransactionForm({ onCancel }: TransactionFormProps) {
             },
           }}
         >
-          {editingId ? "Salvar edição" : "Concluir transação"}
+          Salvar
         </Button>
-        {editingId && (
-          <Button
-            onClick={() => {
-              setEditingId(null);
-              
-              if (!isDesktop) {
-                onCancel?.();
-              }
-            }}
-            variant="outlined"
-            sx={{
-              color: "var(--primaryColor)",
-              width: isMobile ? "144px" : "250px",
-              height: "48px",
-              borderRadius: "8px",
-              fontWeight: 600,
-              fontSize: "16px",
-              textTransform: "none",
-              borderColor: "var(--primaryColor)",
-            }}
-          >
-            Cancelar
-          </Button>
-        )}
+
+        <Button
+          onClick={onCancel}
+          variant="outlined"
+          sx={{
+            color: "var(--primaryColor)",
+            width: isMobile ? "144px" : "250px",
+            height: "48px",
+            borderRadius: "8px",
+            fontWeight: 600,
+            fontSize: "16px",
+            textTransform: "none",
+            borderColor: "var(--primaryColor)",
+          }}
+        >
+          Cancelar
+        </Button>
       </Box>
     </Box>
   );

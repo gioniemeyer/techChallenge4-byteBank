@@ -2,7 +2,10 @@
  * Transactions Module - Infrastructure Repository Implementation
  */
 
-import { ITransactionRepository, TransactionInput } from "../../core/repositories/ITransactionRepository";
+import {
+  ITransactionRepository,
+  TransactionInput,
+} from "../../core/repositories/ITransactionRepository";
 import { Transaction } from "../../core/entities/Transaction";
 
 export class InMemoryTransactionRepository implements ITransactionRepository {
@@ -29,7 +32,7 @@ export class InMemoryTransactionRepository implements ITransactionRepository {
       this.nextId++,
       transaction.date,
       transaction.type,
-      transaction.value
+      transaction.value,
     );
 
     this.transactions.push(newTransaction);
@@ -38,7 +41,7 @@ export class InMemoryTransactionRepository implements ITransactionRepository {
 
   async update(
     id: number,
-    transaction: TransactionInput
+    transaction: TransactionInput,
   ): Promise<Transaction> {
     const index = this.transactions.findIndex((t) => t.id === id);
 
@@ -50,7 +53,7 @@ export class InMemoryTransactionRepository implements ITransactionRepository {
       id,
       transaction.date,
       transaction.type,
-      transaction.value
+      transaction.value,
     );
 
     this.transactions[index] = updated;
