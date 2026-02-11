@@ -2,16 +2,20 @@
 import { useResponsive } from "@/app/contexts/ResponsiveContext";
 import { Box } from "@mui/material";
 import Investments from "../investments/Investments";
-import Transaction from "./Transaction";
+import Transaction from "./Transaction"; // este Transaction espera props { open, onClose }
 import Welcome from "./Welcome";
+import { useState, useCallback } from "react";
 
 interface CentralBoxProps {
   content: string;
 }
 
-/** Componente que exibe o conteúdo central da aplicação. */
 export default function CentralBox({ content }: CentralBoxProps) {
   const { isTablet, isDesktop } = useResponsive();
+  const [open, setOpen] = useState(false);
+
+  const handleOpen = useCallback(() => setOpen(true), []);
+  const handleClose = useCallback(() => setOpen(false), []);
 
   return (
     <Box
@@ -28,7 +32,27 @@ export default function CentralBox({ content }: CentralBoxProps) {
       }}
     >
       {content === "welcome" && <Welcome />}
-      {content === "transaction" && <Transaction />}
+      {content === "transaction" && (
+        <>
+         <Box sx={{ p: 2 }}>
+      <button
+        onClick={handleOpen}
+        style={{
+          padding: "8px 12px",
+          borderRadius: 8,
+          border: "none",
+          background: "var(--primaryColor)",
+          color: "var(--primaryTextColor)",
+          fontWeight: 600,
+          cursor: "pointer",
+        }}
+      >
+        Nova transação
+      </button>
+    </Box>
+          <Transaction open={open} onClose={handleClose} />
+        </>
+      )}
       {content === "investments" && <Investments />}
     </Box>
   );
