@@ -24,6 +24,15 @@ import {
   Investment,
 } from "@/app/modules/investments";
 
+import {
+  FirebaseAuthRepository,
+  SignInUseCase,
+  SignUpUseCase,
+  SignOutUseCase,
+  GetCurrentUserUseCase as GetCurrentAuthUserUseCase,
+} from "@/app/modules/auth";
+import { auth } from "@/app/config/firebase";
+
 // Importar dados mock
 import { statementMock } from "../mocks/statement-mock";
 import { userMock } from "../mocks/user-mock";
@@ -40,6 +49,7 @@ export class DIContainer {
   private transactionRepository: InMemoryTransactionRepository;
   private userRepository: InMemoryUserRepository;
   private investmentRepository: InMemoryInvestmentRepository;
+  private authRepository: FirebaseAuthRepository;
 
   // Casos de Uso - Transações
   private getTransactionsUseCase: GetTransactionsUseCase;
@@ -52,6 +62,12 @@ export class DIContainer {
 
   // Casos de Uso - Investimentos
   private getInvestmentsUseCase: GetInvestmentsUseCase;
+
+  // Casos de Uso - Autenticação
+  private signInUseCase: SignInUseCase;
+  private signUpUseCase: SignUpUseCase;
+  private signOutUseCase: SignOutUseCase;
+  private getCurrentAuthUserUseCase: GetCurrentAuthUserUseCase;
 
   private constructor() {
     // Inicializa repositório com persistência em SessionStorage
@@ -91,6 +107,15 @@ export class DIContainer {
     this.getInvestmentsUseCase = new GetInvestmentsUseCase(
       this.investmentRepository
     );
+
+    // Inicializa repositório e casos de uso de autenticação
+    this.authRepository = new FirebaseAuthRepository(auth);
+    this.signInUseCase = new SignInUseCase(this.authRepository);
+    this.signUpUseCase = new SignUpUseCase(this.authRepository);
+    this.signOutUseCase = new SignOutUseCase(this.authRepository);
+    this.getCurrentAuthUserUseCase = new GetCurrentAuthUserUseCase(
+      this.authRepository
+    );
   }
 
   /**
@@ -127,6 +152,52 @@ export class DIContainer {
 
   public getGetInvestmentsUseCase(): GetInvestmentsUseCase {
     return this.getInvestmentsUseCase;
+  }
+
+  public getSignInUseCase(): SignInUseCase {
+    return this.signInUseCase;
+  }
+
+  public getSignUpUseCase(): SignUpUseCase {
+    return this.signUpUseCase;
+  }
+
+  public getSignOutUseCase(): SignOutUseCase {
+    return this.signOutUseCase;
+  }
+
+  public getGetCurrentAuthUserUseCase(): GetCurrentAuthUserUseCase {
+    return this.getCurrentAuthUserUseCase;
+  }
+
+  /**
+   * Método genérico resolve para manter compatibilidade
+   */
+  public resolve<T>(serviceName: string): T {
+    switch (serviceName) {
+      case "SignInUseCase":
+        return this.signInUseCase as T;
+      case "SignUpUseCase":
+        return this.signUpUseCase as T;
+      case "SignOutUseCase":
+        return this.signOutUseCase as T;
+      case "GetCurrentUserUseCase":
+        return this.getCurrentAuthUserUseCase as T;
+      case "GetTransactionsUseCase":
+        return this.getTransactionsUseCase as T;
+      case "AddTransactionUseCase":
+        return this.addTransactionUseCase as T;
+      case "EditTransactionUseCase":
+        return this.editTransactionUseCase as T;
+      case "DeleteTransactionUseCase":
+        return this.deleteTransactionUseCase as T;
+      case "GetCurrentUserUseCase":
+        return this.getCurrentUserUseCase as T;
+      case "GetInvestmentsUseCase":
+        return this.getInvestmentsUseCase as T;
+      default:
+        throw new Error(`Serviço não encontrado: ${serviceName}`);
+    }
   }
 
   /**
