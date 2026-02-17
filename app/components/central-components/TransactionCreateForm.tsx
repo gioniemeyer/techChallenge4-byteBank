@@ -41,11 +41,8 @@ export default function TransactionCreateForm() {
       value: parseFloat(value.replace(",", ".")),
     };
 
-    console.log("data", data);
-
     try {
-      const res = await addTransaction(data.date, data.type, data.value);
-      console.log("res", res);
+      await addTransaction(data.date, data.type, data.value);
       // limpa campos após criar
       setType("");
       setValue("");
@@ -87,7 +84,7 @@ export default function TransactionCreateForm() {
   }
 
   return (
-    <Box sx={sx}>
+    <Box sx={{ ...sx, mb: 3 }}>
       <FormControl
         sx={{
           width: "100%",

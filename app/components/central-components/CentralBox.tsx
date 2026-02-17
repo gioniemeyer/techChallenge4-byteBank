@@ -35,9 +35,7 @@ export default function CentralBox({ content }: CentralBoxProps) {
 
       {content === "transaction" && (
         <>
-          {/* Formulário inline para criar nova transação */}
           <TransactionCreateForm />
-          {/* Modal de edição: abrir via ação externa (ex.: clicar item na lista) */}
           <TransactionEditModal open={editOpen} onClose={handleEditClose} />
         </>
       )}
