@@ -1,19 +1,23 @@
-/**
- * Transactions Module - Hook
- */
-
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
-import { Transaction } from "../../core/entities/Transaction";
+import {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useEffect,
+  ReactNode,
+} from "react";
+import { Transaction } from "@/app/modules/transactions/core/entities/Transaction";
 import { DIContainer } from "@/app/di/DIContainer";
 import { ValidationError, NotFoundError } from "@/app/modules/shared";
 
-interface UseTransactionManagementReturn {
+interface TransactionContextType {
   transactions: Transaction[];
   loading: boolean;
   error: string | null;
   editingId: number | null;
+  balance: number;
   setEditingId: (id: number | null) => void;
   addTransaction: (
     date: string,
@@ -29,13 +33,22 @@ interface UseTransactionManagementReturn {
   deleteTransaction: (id: number) => Promise<void>;
 }
 
-export function useTransactionManagement(): UseTransactionManagementReturn {
+const TransactionContext = createContext<TransactionContextType | undefined>(
+  undefined
+);
+
+export function TransactionProvider({ children }: { children: ReactNode }) {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
 
   const diContainer = DIContainer.getInstance();
+
+  // Calcula o saldo baseado nas transações
+  const balance = transactions.reduce((acc, t) => {
+    return t.type === "Depósito" ? acc + t.value : acc - t.value;
+  }, 0);
 
   const loadTransactions = useCallback(async () => {
     try {
@@ -45,7 +58,9 @@ export function useTransactionManagement(): UseTransactionManagementReturn {
       const data = await useCase.execute();
       setTransactions(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao carregar transações");
+      setError(
+        err instanceof Error ? err.message : "Erro ao carregar transações"
+      );
     } finally {
       setLoading(false);
     }
@@ -56,16 +71,11 @@ export function useTransactionManagement(): UseTransactionManagementReturn {
   }, [loadTransactions]);
 
   const addTransaction = useCallback(
-    async (
-      date: string,
-      type: "Depósito" | "Transferência",
-      value: number
-    ) => {
+    async (date: string, type: "Depósito" | "Transferência", value: number) => {
       try {
         setError(null);
         const useCase = diContainer.getAddTransactionUseCase();
         await useCase.execute({ date, type, value });
-        // Recarregar transações após adicionar
         await loadTransactions();
       } catch (err) {
         const errorMessage =
@@ -92,7 +102,6 @@ export function useTransactionManagement(): UseTransactionManagementReturn {
         setError(null);
         const useCase = diContainer.getEditTransactionUseCase();
         await useCase.execute({ id, date, type, value });
-        // Recarregar transações após editar
         await loadTransactions();
       } catch (err) {
         const errorMessage =
@@ -116,7 +125,6 @@ export function useTransactionManagement(): UseTransactionManagementReturn {
         setError(null);
         const useCase = diContainer.getDeleteTransactionUseCase();
         await useCase.execute(id);
-        // Recarregar transações após deletar
         await loadTransactions();
       } catch (err) {
         const errorMessage =
@@ -132,14 +140,31 @@ export function useTransactionManagement(): UseTransactionManagementReturn {
     [diContainer, loadTransactions]
   );
 
-  return {
-    transactions,
-    loading,
-    error,
-    editingId,
-    setEditingId,
-    addTransaction,
-    editTransaction,
-    deleteTransaction,
-  };
+  return (
+    <TransactionContext.Provider
+      value={{
+        transactions,
+        loading,
+        error,
+        editingId,
+        balance,
+        setEditingId,
+        addTransaction,
+        editTransaction,
+        deleteTransaction,
+      }}
+    >
+      {children}
+    </TransactionContext.Provider>
+  );
+}
+
+export function useTransactionContext() {
+  const context = useContext(TransactionContext);
+  if (!context) {
+    throw new Error(
+      "useTransactionContext must be used within TransactionProvider"
+    );
+  }
+  return context;
 }

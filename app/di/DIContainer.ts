@@ -54,7 +54,8 @@ export class DIContainer {
   private getInvestmentsUseCase: GetInvestmentsUseCase;
 
   private constructor() {
-    // Inicializa repositórios com dados mockados
+    // Inicializa repositório com persistência em SessionStorage
+    // Se houver dados no cache, usa eles; senão, usa o mock inicial
     this.transactionRepository = new InMemoryTransactionRepository(
       convertMockTransactions(statementMock)
     );
@@ -126,6 +127,14 @@ export class DIContainer {
 
   public getGetInvestmentsUseCase(): GetInvestmentsUseCase {
     return this.getInvestmentsUseCase;
+  }
+
+  /**
+   * Limpa o cache de transações e restaura o mock inicial
+   * (requer reload da página para aplicar)
+   */
+  public clearTransactionCache(): void {
+    this.transactionRepository.clearCache();
   }
 }
 

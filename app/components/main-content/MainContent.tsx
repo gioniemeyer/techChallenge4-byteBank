@@ -1,6 +1,7 @@
 "use client";
 import { ResponsiveProvider } from "@/app/contexts/ResponsiveContext";
 import { SidebarProvider } from "@/app/contexts/SidebarContext";
+import { TransactionProvider } from "@/app/contexts/TransactionContext";
 import BodyContainer from "../BodyContainer";
 import Header from "../header-components/Header";
 
@@ -9,8 +10,10 @@ export default function MainContent() {
   return (
     <ResponsiveProvider>
       <SidebarProvider>
-        <Header />
-        <BodyContainer />
+        <TransactionProvider>
+          <Header />
+          <BodyContainer />
+        </TransactionProvider>
       </SidebarProvider>
     </ResponsiveProvider>
   );

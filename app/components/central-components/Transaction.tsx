@@ -2,7 +2,7 @@
 import { Dialog, DialogContent, DialogTitle } from "@mui/material";
 import { useResponsive } from "@/app/contexts/ResponsiveContext";
 import TransactionForm from "./TransactionForm";
-import { useTransactionManagement } from "@/app/modules/transactions";
+import { useTransactionManagement } from "@/app/modules/transactions/core/hooks/useTransactionManagement";
 import { useEffect, useMemo } from "react";
 
 interface FormModalProps {
@@ -12,17 +12,13 @@ interface FormModalProps {
 
 export default function FormModal({ open, onClose }: FormModalProps) {
   const { isMobile } = useResponsive();
-  const {
-    transactions,
-    editingId,
-    editTransaction,
-    setEditingId,
-  } = useTransactionManagement();
+  const { transactions, editingId, editTransaction, setEditingId } =
+    useTransactionManagement();
 
   // Transação selecionada
   const current = useMemo(
     () => transactions.find((t) => t.id === editingId) || null,
-    [transactions, editingId]
+    [transactions, editingId],
   );
 
   // Se não houver transação (por exemplo, editar foi cancelado), feche o modal
@@ -37,7 +33,11 @@ export default function FormModal({ open, onClose }: FormModalProps) {
     onClose();
   };
 
-  const handleSave = async (data: { date: string; type: "Depósito" | "Transferência"; value: number }) => {
+  const handleSave = async (data: {
+    date: string;
+    type: "Depósito" | "Transferência";
+    value: number;
+  }) => {
     if (!editingId) return;
     await editTransaction(editingId, data.date, data.type, data.value);
     setEditingId(null);

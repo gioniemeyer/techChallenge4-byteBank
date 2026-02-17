@@ -2,7 +2,6 @@
 
 import dynamic from "next/dynamic";
 import { useResponsive } from "@/app/contexts/ResponsiveContext";
-import { useTransactionManagement } from "@/app/modules/transactions";
 import {
   Box,
   Typography,
@@ -17,6 +16,8 @@ import { useEffect, useMemo, useState } from "react";
 import EditButton from "../buttons/EditButton";
 import StatementItem from "./StatementItem";
 import FilterButton from "../buttons/FilterButton";
+import { Transaction } from "@/app/modules/transactions";
+import { useTransactionManagement } from "@/app/modules/transactions/core/hooks/useTransactionManagement";
 
 // Lazy load do FormModal (carrega só quando necessário)
 const FormModal = dynamic(() => import("../central-components/FormModal"), {
@@ -64,7 +65,7 @@ export default function Statement() {
   const filteredTransactions = useMemo(() => {
     const monthQuery = (filters.month || "").trim().toLowerCase();
 
-    return transactions.filter((t) => {
+    return transactions.filter((t: Transaction) => {
       const date = new Date(t.date);
       const monthLongPt = date
         .toLocaleDateString("pt-BR", { month: "long" })
@@ -195,7 +196,7 @@ export default function Statement() {
           width: "100%",
         }}
       >
-        {paginated.map((item, index) => {
+        {paginated.map((item: Transaction, index: number) => {
           const safeId = item.id ?? index;
           return (
             <StatementItem
