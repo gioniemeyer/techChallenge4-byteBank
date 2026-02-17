@@ -2,9 +2,10 @@
 import { useResponsive } from "@/app/contexts/ResponsiveContext";
 import { Box } from "@mui/material";
 import Investments from "../investments/Investments";
-import Transaction from "./Transaction"; // este Transaction espera props { open, onClose }
 import Welcome from "./Welcome";
 import { useState, useCallback } from "react";
+import TransactionCreateForm from "./TransactionCreateForm";
+import TransactionEditModal from "./TransactionEditModal";
 
 interface CentralBoxProps {
   content: string;
@@ -12,10 +13,9 @@ interface CentralBoxProps {
 
 export default function CentralBox({ content }: CentralBoxProps) {
   const { isTablet, isDesktop } = useResponsive();
-  const [open, setOpen] = useState(false);
-
-  const handleOpen = useCallback(() => setOpen(true), []);
-  const handleClose = useCallback(() => setOpen(false), []);
+  const [editOpen, setEditOpen] = useState(false);
+  const handleEditOpen = useCallback(() => setEditOpen(true), []);
+  const handleEditClose = useCallback(() => setEditOpen(false), []);
 
   return (
     <Box
@@ -32,27 +32,16 @@ export default function CentralBox({ content }: CentralBoxProps) {
       }}
     >
       {content === "welcome" && <Welcome />}
+
       {content === "transaction" && (
         <>
-         <Box sx={{ p: 2 }}>
-      <button
-        onClick={handleOpen}
-        style={{
-          padding: "8px 12px",
-          borderRadius: 8,
-          border: "none",
-          background: "var(--primaryColor)",
-          color: "var(--primaryTextColor)",
-          fontWeight: 600,
-          cursor: "pointer",
-        }}
-      >
-        Nova transação
-      </button>
-    </Box>
-          <Transaction open={open} onClose={handleClose} />
+          {/* Formulário inline para criar nova transação */}
+          <TransactionCreateForm />
+          {/* Modal de edição: abrir via ação externa (ex.: clicar item na lista) */}
+          <TransactionEditModal open={editOpen} onClose={handleEditClose} />
         </>
       )}
+
       {content === "investments" && <Investments />}
     </Box>
   );

@@ -17,8 +17,7 @@ import EditButton from "../buttons/EditButton";
 import StatementItem from "./StatementItem";
 import FilterButton from "../buttons/FilterButton";
 import { Transaction } from "@/app/modules/transactions";
-import { useTransactionManagement } from "@/app/modules/transactions/core/hooks/useTransactionManagement";
-
+import { useTransactionContext } from "@/app/contexts/TransactionContext";
 // Lazy load do FormModal (carrega só quando necessário)
 const FormModal = dynamic(() => import("../central-components/FormModal"), {
   loading: () => <span>Carregando modal...</span>,
@@ -27,14 +26,13 @@ const FormModal = dynamic(() => import("../central-components/FormModal"), {
 
 export default function Statement() {
   const { isMobile, isDesktop } = useResponsive();
-
   const {
     transactions,
     editingId,
     setEditingId,
     deleteTransaction,
     editTransaction,
-  } = useTransactionManagement();
+  } = useTransactionContext();
 
   const [editMode, setEditMode] = useState(false);
   const [deleteMode, setDeleteMode] = useState(false);

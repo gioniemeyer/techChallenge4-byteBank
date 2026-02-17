@@ -1,27 +1,28 @@
 "use client";
 import { Dialog, DialogContent, DialogTitle } from "@mui/material";
 import { useResponsive } from "@/app/contexts/ResponsiveContext";
-import TransactionForm from "./TransactionForm";
-import { useTransactionManagement } from "@/app/modules/transactions/core/hooks/useTransactionManagement";
+import TransactionForm from "./TransactionForm"; // versão que delega a onSave
 import { useEffect, useMemo } from "react";
+import { useTransactionContext } from "@/app/contexts/TransactionContext";
 
-interface FormModalProps {
+interface TransactionEditModalProps {
   open: boolean;
   onClose: () => void;
 }
 
-export default function FormModal({ open, onClose }: FormModalProps) {
+export default function TransactionEditModal({
+  open,
+  onClose,
+}: TransactionEditModalProps) {
   const { isMobile } = useResponsive();
   const { transactions, editingId, editTransaction, setEditingId } =
-    useTransactionManagement();
+    useTransactionContext();
 
-  // Transação selecionada
   const current = useMemo(
     () => transactions.find((t) => t.id === editingId) || null,
     [transactions, editingId],
   );
 
-  // Se não houver transação (por exemplo, editar foi cancelado), feche o modal
   useEffect(() => {
     if (open && !current) {
       onClose();
@@ -47,23 +48,15 @@ export default function FormModal({ open, onClose }: FormModalProps) {
   return (
     <Dialog
       open={open}
-      slotProps={{
-        paper: {
-          sx: { margin: 0 },
-        },
-      }}
+      slotProps={{ paper: { sx: { margin: 0 } } }}
       onClose={handleCancel}
     >
       <DialogTitle
-        sx={{
-          color: "var(--thirdTextColor)",
-          ml: isMobile ? 0 : 3,
-        }}
+        sx={{ color: "var(--thirdTextColor)", ml: isMobile ? 0 : 3 }}
       >
         Editar transação
       </DialogTitle>
       <DialogContent>
-        {/* Passe os dados atuais e os handlers para o formulário */}
         <TransactionForm
           initialData={
             current
