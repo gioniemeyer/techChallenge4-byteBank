@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
 import {
   IconButton,
@@ -16,7 +16,6 @@ import {
   Typography,
 } from "@mui/material";
 
-// FilterButton.tsx
 interface FilterValues {
   month: string;
   transactionType: string;
@@ -24,52 +23,108 @@ interface FilterValues {
 
 interface FilterButtonProps {
   initialFilters?: FilterValues;
-  onChange?: (filters: FilterValues) => void;
-  onApply?: (filters: FilterValues) => void;
+  onChange?: (filters: FilterValues) => void; // chamado em debounce para mês (>= 3 chars)
+  onApply?: (filters: FilterValues) => void; // chamado ao clicar "Aplicar"
+  debounceMs?: number;
+  minChars?: number; // mínimo de caracteres para ativar filtro do mês
 }
 
 export default function FilterButton({
   initialFilters,
   onChange,
   onApply,
+  debounceMs = 400,
+  minChars = 3,
 }: FilterButtonProps) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
+  // Filtros confirmados
   const [filters, setFilters] = useState<FilterValues>({
     month: initialFilters?.month ?? "",
     transactionType: initialFilters?.transactionType ?? "",
   });
 
-  const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
+  // Draft do mês (campo de digitação) - independente do filtro confirmado
+  const [monthDraft, setMonthDraft] = useState<string>(filters.month);
 
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleOpen = (event: React.MouseEvent<HTMLElement>) =>
+    setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
 
-  // Ao atualizar, sempre manter string
-  const updateFilters = (next: Partial<FilterValues>) => {
+  // Tipo de transação (imediato)
+  const handleTypeChange = (value: string) => {
     const merged: FilterValues = {
-      month: next.month ?? filters.month ?? "",
-      transactionType: next.transactionType ?? filters.transactionType ?? "",
+      month: filters.month, // mantém o mês confirmado
+      transactionType: value ?? "",
     };
     setFilters(merged);
     onChange?.(merged);
   };
 
-  const clearFilters = () => {
-    const cleared: FilterValues = {
-      month: "",
-      transactionType: "",
+  // Debounce do mês: somente dispara quando >= minChars; senão, limpa o filtro de mês
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+
+    debounceRef.current = setTimeout(() => {
+      // Se digitou menos que minChars, considere month como vazio (sem filtro por mês)
+      const normalizedMonth = monthDraft.trim();
+      const effectiveMonth =
+        normalizedMonth.length >= minChars ? normalizedMonth : "";
+
+      // Só dispara se houver mudança real
+      if (effectiveMonth !== filters.month) {
+        const merged: FilterValues = {
+          month: effectiveMonth,
+          transactionType: filters.transactionType,
+        };
+        setFilters(merged);
+        onChange?.(merged);
+      }
+    }, debounceMs);
+
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
     };
+    // Observa apenas o draft + tempo (não re-agenda com updates de filters)
+  }, [monthDraft, debounceMs, minChars]);
+
+  // Limpar filtros
+  const clearFilters = () => {
+    const cleared: FilterValues = { month: "", transactionType: "" };
     setFilters(cleared);
+    setMonthDraft("");
     onChange?.(cleared);
   };
 
+  // Aplicar (confirma draft -> respeita minChars)
   const handleApply = () => {
-    onApply?.(filters);
+    const normalizedMonth = monthDraft.trim();
+    const effectiveMonth =
+      normalizedMonth.length >= minChars ? normalizedMonth : "";
+
+    const applied: FilterValues = {
+      month: effectiveMonth,
+      transactionType: filters.transactionType,
+    };
+    setFilters(applied);
+    onApply?.(applied);
     handleClose();
   };
+
+  // Sincroniza drafts com initialFilters
+  useEffect(() => {
+    if (initialFilters) {
+      setFilters({
+        month: initialFilters.month ?? "",
+        transactionType: initialFilters.transactionType ?? "",
+      });
+      setMonthDraft(initialFilters.month ?? "");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialFilters?.month, initialFilters?.transactionType]);
 
   return (
     <>
@@ -109,26 +164,24 @@ export default function FilterButton({
           </Typography>
           <Divider />
 
-          {/* Mês digitado */}
+          {/* Mês (debounce + mínimo de caracteres) */}
           <TextField
             size="small"
             label="Mês (ex.: Novembro)"
-            placeholder="Digite o mês"
-            value={filters.month ?? ""}
-            onChange={(e) => updateFilters({ month: e.target.value })}
+            placeholder={`Digite pelo menos ${minChars} caracteres`}
+            value={monthDraft}
+            onChange={(e) => setMonthDraft(e.target.value)}
             fullWidth
           />
 
-          {/* Tipo de transação */}
+          {/* Tipo de transação (imediato) */}
           <FormControl size="small" fullWidth>
             <InputLabel id="type-label">Tipo de Transação</InputLabel>
             <Select
               labelId="type-label"
               label="Tipo de Transação"
               value={filters.transactionType ?? ""}
-              onChange={(e) =>
-                updateFilters({ transactionType: e.target.value })
-              }
+              onChange={(e) => handleTypeChange(e.target.value)}
               input={<OutlinedInput label="Tipo de Transação" />}
             >
               <MenuItem value="">
