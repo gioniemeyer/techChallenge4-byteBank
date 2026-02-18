@@ -50,7 +50,7 @@ export default function Welcome() {
             textAlign: isMobile ? "center" : "left",
           }}
         >
-          Olá, Bem vindo ao Balance Coin! :)
+          Olá, Bem vindo ao Bytebank! :)
         </Typography>
 
         <Typography
