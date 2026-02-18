@@ -44,9 +44,7 @@ export class InMemoryTransactionRepository implements ITransactionRepository {
       if (!data) return null;
 
       const parsed = JSON.parse(data) as Transaction[];
-      return parsed.map(
-        (t) => new Transaction(t.id!, t.date, t.type, t.value)
-      );
+      return parsed.map((t) => new Transaction(t.id!, t.date, t.type, t.value));
     } catch {
       return null;
     }
@@ -57,7 +55,7 @@ export class InMemoryTransactionRepository implements ITransactionRepository {
 
     try {
       sessionStorage.setItem(STORAGE_KEY, JSON.stringify(this.transactions));
-    } catch { }
+    } catch {}
   }
 
   async getAll(): Promise<Transaction[]> {
@@ -73,7 +71,7 @@ export class InMemoryTransactionRepository implements ITransactionRepository {
       this.nextId++,
       transaction.date,
       transaction.type,
-      transaction.value
+      transaction.value,
     );
 
     this.transactions.push(newTransaction);
@@ -81,7 +79,10 @@ export class InMemoryTransactionRepository implements ITransactionRepository {
     return newTransaction;
   }
 
-  async update(id: number, transaction: TransactionInput): Promise<Transaction> {
+  async update(
+    id: number,
+    transaction: TransactionInput,
+  ): Promise<Transaction> {
     const index = this.transactions.findIndex((t) => t.id === id);
 
     if (index === -1) {
@@ -92,7 +93,7 @@ export class InMemoryTransactionRepository implements ITransactionRepository {
       id,
       transaction.date,
       transaction.type,
-      transaction.value
+      transaction.value,
     );
 
     this.transactions[index] = updated;

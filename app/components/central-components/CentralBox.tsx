@@ -2,16 +2,20 @@
 import { useResponsive } from "@/app/contexts/ResponsiveContext";
 import { Box } from "@mui/material";
 import Investments from "../investments/Investments";
-import Transaction from "./Transaction";
 import Welcome from "./Welcome";
+import { useState, useCallback } from "react";
+import TransactionCreateForm from "./TransactionCreateForm";
+import TransactionEditModal from "./TransactionEditModal";
 
 interface CentralBoxProps {
   content: string;
 }
 
-/** Componente que exibe o conteúdo central da aplicação. */
 export default function CentralBox({ content }: CentralBoxProps) {
   const { isTablet, isDesktop } = useResponsive();
+  const [editOpen, setEditOpen] = useState(false);
+  const handleEditOpen = useCallback(() => setEditOpen(true), []);
+  const handleEditClose = useCallback(() => setEditOpen(false), []);
 
   return (
     <Box
@@ -28,7 +32,14 @@ export default function CentralBox({ content }: CentralBoxProps) {
       }}
     >
       {content === "welcome" && <Welcome />}
-      {content === "transaction" && <Transaction />}
+
+      {content === "transaction" && (
+        <>
+          <TransactionCreateForm />
+          <TransactionEditModal open={editOpen} onClose={handleEditClose} />
+        </>
+      )}
+
       {content === "investments" && <Investments />}
     </Box>
   );

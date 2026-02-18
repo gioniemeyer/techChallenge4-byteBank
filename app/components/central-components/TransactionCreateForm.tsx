@@ -11,43 +11,15 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useTransactionContext } from "@/app/contexts/TransactionContext";
 
-interface TransactionFormProps {
-  initialData?: {
-    date: string;
-    type: "Depósito" | "Transferência";
-    value: number;
-  };
-  onCancel?: () => void;
-  onSave: (data: {
-    date: string;
-    type: "Depósito" | "Transferência";
-    value: number;
-  }) => void;
-}
-
-export default function TransactionForm({
-  initialData,
-  onCancel,
-  onSave,
-}: TransactionFormProps) {
+export default function TransactionCreateForm() {
   const { isMobile, isDesktop } = useResponsive();
-
+  const { addTransaction } = useTransactionContext();
   const [type, setType] = useState<"" | "d" | "t">("");
   const [value, setValue] = useState("");
   const [error, setError] = useState("");
-
-  useEffect(() => {
-    if (initialData) {
-      setType(initialData.type === "Depósito" ? "d" : "t");
-      setValue(initialData.value.toFixed(2).replace(".", ","));
-    } else {
-      setType("");
-      setValue("");
-    }
-    setError("");
-  }, [initialData]);
 
   const handleTypeChange = (event: SelectChangeEvent) => {
     setType(event.target.value as "d" | "t");
@@ -62,14 +34,21 @@ export default function TransactionForm({
     setError("");
 
     const data = {
-      date: initialData ? initialData.date : new Date().toISOString(),
+      date: new Date().toISOString(),
       type: (type === "d" ? "Depósito" : "Transferência") as
         | "Depósito"
         | "Transferência",
       value: parseFloat(value.replace(",", ".")),
     };
 
-    await onSave(data);
+    try {
+      await addTransaction(data.date, data.type, data.value);
+      // limpa campos após criar
+      setType("");
+      setValue("");
+    } catch {
+      setError("Erro ao adicionar transação");
+    }
   };
 
   let sx: SxProps<Theme>;
@@ -105,7 +84,7 @@ export default function TransactionForm({
   }
 
   return (
-    <Box sx={sx}>
+    <Box sx={{ ...sx, mb: 3 }}>
       <FormControl
         sx={{
           width: "100%",
@@ -239,28 +218,7 @@ export default function TransactionForm({
             },
           }}
         >
-          Salvar
-        </Button>
-        <Button
-          onClick={() => {
-            setType("");
-            setValue("");
-            setError("");
-            onCancel?.();
-          }}
-          variant="outlined"
-          sx={{
-            color: "var(--primaryColor)",
-            width: isMobile ? "144px" : "250px",
-            height: "48px",
-            borderRadius: "8px",
-            fontWeight: 600,
-            fontSize: "16px",
-            textTransform: "none",
-            borderColor: "var(--primaryColor)",
-          }}
-        >
-          Cancelar
+          Concluir transação
         </Button>
       </Box>
     </Box>

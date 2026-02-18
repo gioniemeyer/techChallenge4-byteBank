@@ -1,6 +1,7 @@
 "use client";
+
+import dynamic from "next/dynamic";
 import { useResponsive } from "@/app/contexts/ResponsiveContext";
-import { useTransactionContext } from "@/app/contexts/TransactionContext";
 import {
   Box,
   Typography,
@@ -12,17 +13,27 @@ import {
   MenuItem,
 } from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
-import FormModal from "../central-components/FormModal";
 import EditButton from "../buttons/EditButton";
 import StatementItem from "./StatementItem";
 import FilterButton from "../buttons/FilterButton";
+import { Transaction } from "@/app/modules/transactions";
+import { useTransactionContext } from "@/app/contexts/TransactionContext";
+// Lazy load do FormModal (carrega só quando necessário)
+const FormModal = dynamic(() => import("../central-components/FormModal"), {
+  loading: () => <span>Carregando modal...</span>,
+  ssr: false, // garante que o modal seja tratado apenas no client
+});
 
 export default function Statement() {
   const { isMobile, isDesktop } = useResponsive();
-  const { transactions, editingId, setEditingId, deleteTransaction } =
-    useTransactionContext();
+  const {
+    transactions,
+    editingId,
+    setEditingId,
+    deleteTransaction,
+    editTransaction,
+  } = useTransactionContext();
 
-  // Estados para modo de edição e exclusão
   const [editMode, setEditMode] = useState(false);
   const [deleteMode, setDeleteMode] = useState(false);
   const [open, setOpen] = useState(false);
@@ -35,7 +46,7 @@ export default function Statement() {
 
   // Paginação
   const [page, setPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(8); // valor inicial
+  const [rowsPerPage, setRowsPerPage] = useState(8);
   const optionsRowsPerPage = [5, 8, 10, 20];
 
   const handlePageChange = (_: React.ChangeEvent<unknown>, value: number) => {
@@ -45,14 +56,14 @@ export default function Statement() {
   const handleRowsPerPageChange = (event: { target: { value: number } }) => {
     const value = Number(event.target.value);
     setRowsPerPage(value);
-    setPage(1); // reset para primeira página ao mudar o tamanho
+    setPage(1);
   };
 
   // Filtro
   const filteredTransactions = useMemo(() => {
     const monthQuery = (filters.month || "").trim().toLowerCase();
 
-    return transactions.filter((t) => {
+    return transactions.filter((t: Transaction) => {
       const date = new Date(t.date);
       const monthLongPt = date
         .toLocaleDateString("pt-BR", { month: "long" })
@@ -67,7 +78,7 @@ export default function Statement() {
   // Total de páginas
   const totalPages = Math.max(
     1,
-    Math.ceil(filteredTransactions.length / rowsPerPage)
+    Math.ceil(filteredTransactions.length / rowsPerPage),
   );
 
   // Itens paginados
@@ -106,12 +117,18 @@ export default function Statement() {
   const handleItemClick = (id: number) => {
     if (editMode) {
       setEditingId(id);
-      if (!isDesktop) openModal();
+      openModal(); // abrir também no desktop
     }
     if (deleteMode) {
       deleteTransaction(id);
     }
   };
+
+  // Transação atual
+  const currentTransaction = useMemo(
+    () => transactions.find((t) => t.id === editingId) || null,
+    [transactions, editingId],
+  );
 
   return (
     <Box
@@ -147,11 +164,11 @@ export default function Statement() {
             initialFilters={filters}
             onChange={(f) => {
               setFilters(f);
-              setPage(1); // reset página ao mudar filtros
+              setPage(1);
             }}
             onApply={(f) => {
               setFilters(f);
-              setPage(1); // reset página ao aplicar filtros
+              setPage(1);
             }}
           />
           <span onClick={handleEditMode}>
@@ -177,18 +194,21 @@ export default function Statement() {
           width: "100%",
         }}
       >
-        {paginated.map((item, index) => (
-          <StatementItem
-            key={item.id || index}
-            id={item.id || index}
-            date={item.date}
-            type={item.type}
-            value={item.value}
-            isClickable={editMode || deleteMode}
-            isSelected={editingId === item.id && editMode}
-            onClick={() => handleItemClick(item.id)}
-          />
-        ))}
+        {paginated.map((item: Transaction, index: number) => {
+          const safeId = item.id ?? index;
+          return (
+            <StatementItem
+              key={safeId}
+              id={safeId}
+              date={item.date}
+              type={item.type}
+              value={item.value}
+              isClickable={editMode || deleteMode}
+              isSelected={editingId === safeId && editMode}
+              onClick={() => handleItemClick(safeId)}
+            />
+          );
+        })}
       </Box>
 
       {/* Rodapé: seletor de rowsPerPage + paginação */}
@@ -222,40 +242,57 @@ export default function Statement() {
           onChange={handlePageChange}
           size="small"
           sx={{
-            // cor padrão dos itens (números, setas, reticências)
-            "& .MuiPaginationItem-root": {
-              color: "var(--thirdTextColor)",
-            },
+            "& .MuiPaginationItem-root": { color: "var(--thirdTextColor)" },
             "& .MuiPaginationItem-icon, & .MuiPaginationItem-ellipsis": {
               color: "var(--thirdTextColor)",
             },
-
-            // item selecionado: fundo primário e texto branco
             "& .MuiPaginationItem-root.Mui-selected": {
               backgroundColor: "var(--primaryColor)",
               color: "var(--primaryTextColor)",
             },
-            // hover do item selecionado
             "& .MuiPaginationItem-root.Mui-selected:hover": {
               backgroundColor: "var(--primaryColor)",
               opacity: 0.9,
             },
-
-            // hover dos itens não selecionados (opcional)
             "& .MuiPaginationItem-root:hover": {
               backgroundColor: "rgba(255,255,255,0.08)",
             },
-
-            // botão de navegação (First/Last/Prev/Next) se usar showFirstButton/showLastButton
             "& .MuiPaginationItem-previousNext, & .MuiPaginationItem-firstLast":
-              {
-                color: "#000",
-              },
+              { color: "#000" },
           }}
         />
       </Stack>
 
-      <FormModal open={open} onClose={closeModal} />
+      {/* Modal de edição - lazy e controlado */}
+      {open && (
+        <FormModal
+          open={open}
+          onClose={closeModal}
+          current={
+            currentTransaction
+              ? {
+                  date: currentTransaction.date,
+                  type: currentTransaction.type,
+                  value: currentTransaction.value,
+                }
+              : null
+          }
+          onSave={async (data) => {
+            if (!editingId) return;
+            try {
+              await editTransaction(
+                editingId,
+                data.date,
+                data.type,
+                data.value,
+              );
+              closeModal();
+            } catch (e) {
+              console.error("Erro ao salvar edição:", e);
+            }
+          }}
+        />
+      )}
     </Box>
   );
 }
