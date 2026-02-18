@@ -1,6 +1,7 @@
 import { Inter } from "next/font/google";
 import type { Metadata } from "next";
 import "./globals.css";
+import { AuthProvider } from "./modules/auth/presentation/providers/AuthProvider";
 
 const inter = Inter({ subsets: ["latin"], display: "swap" });
 
@@ -15,7 +16,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-br" className={inter.className}>
-      <body>{children}</body>
+      <body>
+        <AuthProvider>
+          {children}
+        </AuthProvider>
+      </body>
     </html>
   );
 }

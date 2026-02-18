@@ -2,7 +2,7 @@
 import { useResponsive } from "@/app/contexts/ResponsiveContext";
 import { AppBar, Box, Container } from "@mui/material";
 import DrawerButton from "../buttons/DrawerButton";
-import UserComponent from "./UserComponent";
+import { UserMenu } from "./UserMenu";
 
 /** Componente que exibe o cabeçalho da aplicação. */
 export default function Header() {
@@ -42,7 +42,7 @@ export default function Header() {
           }}
         >
           {isMobile && <DrawerButton />}
-          <UserComponent />
+          <UserMenu />
         </Box>
       </Container>
     </AppBar>

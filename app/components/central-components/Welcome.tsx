@@ -50,7 +50,7 @@ export default function Welcome() {
             textAlign: isMobile ? "center" : "left",
           }}
         >
-          Olá, {userMock[0].first_name}! :)
+          Olá, Bem vindo ao Bytebank! :)
         </Typography>
 
         <Typography
