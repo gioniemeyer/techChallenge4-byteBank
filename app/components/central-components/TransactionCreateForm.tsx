@@ -1,5 +1,6 @@
 "use client";
 import { useResponsive } from "@/app/contexts/ResponsiveContext";
+import { useTransactionContext } from "@/app/contexts/TransactionContext";
 import type { SxProps, Theme } from "@mui/material";
 import {
   Box,
@@ -12,7 +13,7 @@ import {
   Typography,
 } from "@mui/material";
 import { useState } from "react";
-import { useTransactionContext } from "@/app/contexts/TransactionContext";
+import TransactionImages from "../decorative-images/TransactionImages";
 
 export default function TransactionCreateForm() {
   const { isMobile, isDesktop } = useResponsive();
@@ -84,7 +85,33 @@ export default function TransactionCreateForm() {
   }
 
   return (
-    <Box sx={{ ...sx, mb: 3 }}>
+    <Box
+      sx={{
+        position: "relative",
+        height: isMobile ? "655px" : "478px",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: isMobile ? "center" : "flex-start",
+        justifyContent: "flex-start",
+      }}
+    >
+      <TransactionImages />
+
+      <Typography
+        sx={{
+          fontWeight: 700,
+          fontSize: "25px",
+          color: "var(--thirdTextColor)",
+          mt: isMobile ? 4 : 3,
+          ml: isMobile ? 0 : 3,
+          textAlign: isMobile ? "center" : "left",
+          position: "relative",
+        }}
+      >
+        Nova transação
+      </Typography>
+
+      <Box sx={{ ...sx, mb: 3 }}>
       <FormControl
         sx={{
           width: "100%",
@@ -220,6 +247,7 @@ export default function TransactionCreateForm() {
         >
           Concluir transação
         </Button>
+      </Box>
       </Box>
     </Box>
   );
